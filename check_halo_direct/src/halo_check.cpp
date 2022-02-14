@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <math.h>
 #include <fstream>
-#include <algorithm>    // std::sort
+#include <algorithm> // std::sort
 #include <sstream>
 #include <omp.h>
 #include <sys/stat.h>
@@ -18,50 +18,64 @@
 #include "GenericIO.h"
 #include "Partition.h"
 #include "Halos_test.h"
-#include "MurmurHashNeutral2.h" 
+#include "MurmurHashNeutral2.h"
 #include "routines.h"
 
 /// Assumes ids and  are consistent but ordering may have changed
-/// Redistributes aongst ranks and sorts the values for a one-to-one check of the changes in 
+/// Redistributes aongst ranks and sorts the values for a one-to-one check of the changes in
 /// several halo outputs
-
 
 // Cosmotools
 using namespace std;
 using namespace gio;
 using namespace cosmotk;
 
-
-bool comp_by_halo_dest(const halo_properties_test &a, const halo_properties_test &b) {
+bool comp_by_halo_dest(const halo_properties_test &a, const halo_properties_test &b)
+{
   return a.rank < b.rank;
 }
 
-bool comp_by_halo_tag(const halo_properties_test &a, const halo_properties_test &b) {
+bool comp_by_halo_tag(const halo_properties_test &a, const halo_properties_test &b)
+{
   return a.fof_halo_tag < b.fof_halo_tag;
 }
 
-int compute_mean_float(vector<float> *val1, vector<float> *val2, int num_halos , string var_name, string var_name2, float lim){
+inline void write_to_file(std::string filename, std::string text)
+{
+  std::fstream file;
+
+  //std::cout << "@@ " << text << std::endl;
+
+  file.open(filename, std::ios_base::app | std::ios_base::in);
+  if (file.is_open())
+    file << text;
+}
+
+int compute_mean_float(vector<float> *val1, vector<float> *val2, int num_halos, string var_name, string var_name2, float lim)
+{
   int rank, n_ranks;
   rank = Partition::getMyProc();
   n_ranks = Partition::getNumProc();
 
-  double diff=0;
-  double diff_frac=0;
-  int n_tot;
-  double frac_max;
+  double diff = 0;
+  double diff_frac = 0;
+  double frac_max = 0;
+
+
   double mean;
-  double stddev=0;
-  double stddevq=0;
-  double meanq=0;
+  double stddev = 0;
+  double stddevq = 0;
+  double meanq = 0;
   double meanq_tot;
+  int n_tot;
 
   for (int i=0; i<num_halos; i++){
       diff += (double)(val1->at(i)-val2->at(i));
       meanq += (double)(val1->at(i));
       if (fabs(val1->at(i))>1.e-6){
-	 double frac = 0;
-	 frac = (double)(fabs(val1->at(i)-val2->at(i))/fabs(val1->at(i)));
-         diff_frac = (diff_frac<frac)?frac:diff_frac;
+	      double frac = 0;
+	      frac = (double)(fabs(val1->at(i)-val2->at(i))/fabs(val1->at(i)));
+        diff_frac = (diff_frac<frac)?frac:diff_frac;
       }
    }
 
@@ -70,6 +84,7 @@ int compute_mean_float(vector<float> *val1, vector<float> *val2, int num_halos ,
       MPI_Allreduce(&diff_frac, &frac_max, 1, MPI_DOUBLE, MPI_MAX,  Partition::getComm());
       MPI_Allreduce(&meanq, &meanq_tot, 1, MPI_DOUBLE, MPI_SUM, Partition::getComm());
       MPI_Allreduce(&num_halos, &n_tot, 1, MPI_INT, MPI_SUM,  Partition::getComm());
+
    mean = mean/n_tot;
    meanq_tot = meanq_tot/n_tot;
 
@@ -91,27 +106,38 @@ int compute_mean_float(vector<float> *val1, vector<float> *val2, int num_halos ,
    bool print_out = true;
    if (rank==0){
 
-     if ((frac_max<lim)||((fabs(stddev_tot/stddevq_tot)<lim)&&(fabs(mean/meanq_tot)<lim))) // no values change by more than lim
-       print_out=false;
-     if (isnan(mean)) // if nan is present, then this is higher than threshold
-       print_out=true;
-     if (print_out){
-     cout << " " << var_name << endl;
-     cout << " " << var_name2 << endl;
-     cout << " ______________________________________" <<endl;
-     cout << " mean difference = " << mean << endl;
-     cout << " maximum fractional difference = " << frac_max<< endl;
-     cout << " standard deviation of difference = " << stddev_tot << endl;
-     cout << " mean of quantity = " << meanq_tot << endl;
-     cout << " standard deviation of quantity = " << stddevq_tot << endl;
-     cout << " number of matching objects = " << n_tot << endl;
-     cout << endl;
-     return 1;
-     }
+      if ((frac_max<lim)||((fabs(stddev_tot/stddevq_tot)<lim)&&(fabs(mean/meanq_tot)<lim))) // no values change by more than lim
+        print_out=false;
+      if (isnan(mean)) // if nan is present, then this is higher than threshold
+        print_out=true;
+        
+      if (print_out){
+        cout << " " << var_name << endl;
+        cout << " " << var_name2 << endl;
+        cout << " ______________________________________" <<endl;
+
+        cout << " mean difference = " << mean << endl;
+        write_to_file("outputs/test_mean.yaml", " " + var_name + ": " + std::to_string(mean) + "\n");
+
+        cout << " maximum fractional difference = " << frac_max << endl;
+        write_to_file("outputs/test_fracDiff.yaml", " " + var_name + ": " + std::to_string(frac_max) + "\n");
+
+        cout << " standard deviation of difference = " << stddev_tot << endl;
+        write_to_file("outputs/test_stdDevDiff.yaml", " " + var_name + ": " + std::to_string(stddev_tot) + "\n");
+
+        cout << " mean of quantity = " << meanq_tot << endl;
+        write_to_file("outputs/test_meanQty.yaml", " " + var_name + ": " + std::to_string(meanq_tot) + "\n");
+
+        cout << " standard deviation of quantity = " << stddevq_tot << endl;
+        write_to_file("outputs/test_stdDevQty.yaml", " " + var_name + ": " + std::to_string(stddevq_tot) + "\n");
+        
+        cout << endl;
+        return 1;
+      }
    }
    return 0;
-
 }
+
 
 int compute_mean_std_dist_ellipticity(Halos_test H_1 , Halos_test H_2, float lim ){
   int rank, n_ranks;
@@ -140,18 +166,28 @@ int  compute_mean_std_dist_halo(Halos_test H_1 , Halos_test H_2, float lim ){
 
   int count = H_1.num_halos;
 
-  int err=0;
-  for (int i =0; i<N_HALO_FLOATS; i++){
+  if (rank == 0)
+  {
+  write_to_file("outputs/test_mean.yaml",      "-\n");
+  write_to_file("outputs/test_fracDiff.yaml",  "-\n");
+  write_to_file("outputs/test_stdDevDiff.yaml","-\n");
+  write_to_file("outputs/test_meanQty.yaml",   "-\n");
+  write_to_file("outputs/test_stdDevQty.yaml", "-\n");
+  }
+
+  int err = 0;
+  for (int i = 0; i < N_HALO_FLOATS; i++)
+  {
     string var_name = float_var_names_test[i];
     string var_name2 = float_var_names_test2[i];
-    err += compute_mean_float(H_1.float_data[i],H_2.float_data[i],count,var_name,var_name2,lim);
+    err += compute_mean_float(H_1.float_data[i], H_2.float_data[i], count, var_name, var_name2, lim);
   }
   return err;
 }
 
-
-inline unsigned int tag_to_rank(int64_t fof_tag, int n_ranks) {
-    return MurmurHashNeutral2((void*)(&fof_tag),sizeof(int64_t),0) % n_ranks;
+inline unsigned int tag_to_rank(int64_t fof_tag, int n_ranks)
+{
+  return MurmurHashNeutral2((void *)(&fof_tag), sizeof(int64_t), 0) % n_ranks;
 }
 
 halo_properties_test alter_ellipticities(halo_properties_test tmp){
@@ -220,6 +256,8 @@ void read_halos(Halos_test &H0, string file_name, int file_opt) {
   GIO.readData();
   H0.Resize(num_elems);
 }  
+
+
 
 int perform_halo_check(string fof_file, string fof_file2, float lim, float min_mass, float max_mass, map<int64_t, int> *tag_map){
   int rank, n_ranks;
@@ -563,4 +601,3 @@ int perform_halo_check(string fof_file, string fof_file2, float lim, float min_m
   return 0;
 
 }
-

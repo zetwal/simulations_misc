@@ -1,0 +1,55 @@
+{
+    "halo-opt-comments" : "0 = ID matching, 1 = position matching, 2 = distribution comparisons, -1 = none",
+    "halo-opt" : 1,
+
+    "sod-opt-comments" : "0 = SOD bin property file comparison (id matching), -1 = none",
+    "sod-opt" : -1,
+
+    "part-opt-comments" : "0 = bighaloparticle file matching (id matching), 1 = bhp and halopart and tags, -1 = none",
+    "part-opt" : -1,
+    
+
+    "box-size" : 256,
+    "threshold-fraction" : 0.0001,
+
+    "minimum-mass-for-position-matching" : 1E+13,
+    "maximum-mass-for-position-matching" : 1E+15,
+
+    "file-paths" :
+    {
+        "orig" : "/projects/groups/vizproject/dssdata/Exasky/vel_run/vel-testhydro-624/analysis/halo",
+        "comparison" : "/projects/groups/vizproject/dssdata/Exasky/vel_run/vel-testhydro-624/analysis/halo"
+    },
+
+    "haloproperties" : 
+    {
+        "orig" : "/orig-624.haloproperties",
+        "comp" : "/sz_test3-624.haloproperties"
+    },
+
+    "sodfile" : 
+    {
+        "orig" : "/orig-delta200.0-624.sodpropertybins",
+        "comp" : "/sz_test3-delta200.0-624.sodpropertybins"
+    },
+
+    
+    "part-file" : 
+    {
+        "orig" : "/orig-delta200.0-624.bighaloparticles#104",
+        "comp" : "/sz_test3-624.bighaloparticles#104"
+    },
+
+
+    "part-file-a" : 
+    {
+        "orig" : "/orig-624.haloparticles#104",
+        "comp" : "/sz_test3-624.haloparticles#104"
+    },
+
+    "part-file-b" : 
+    {
+        "orig" : "/orig-624.haloparticletags#104",
+        "comp" : "/sz_test3-624.haloparticletags#104"
+    }
+}

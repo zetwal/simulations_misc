@@ -7,7 +7,7 @@ This testing suite directly compares two halo catalog outputs, assuming these ar
 ```
 /data/a/cpac/prlarsen/test_direc/arborx/final_may
 /data/a/cpac/prlarsen/test_direc/arborx/finish
-2
+1
 # 0 = ID matching, 1 = position matching, 2 = distribution comparisons, -1 = none
 0
 # 0 = SOD bin property file comparison (id matching), -1 = none

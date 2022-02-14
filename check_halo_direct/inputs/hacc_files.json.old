@@ -1,0 +1,33 @@
+{
+    "haloproperties" : 
+    {
+        "orig" : "/orig-499.haloproperties",
+        "comp" : "/sz_001_velNoComp-499.haloproperties"
+    },
+
+    "sodfile" : 
+    {
+        "orig" : "/orig-delta200.0-499.sodpropertybins",
+        "comp" : "/sz_001_velNoComp-delta200.0-499.sodpropertybins"
+    },
+
+    
+    "part-file" : 
+    {
+        "orig" : "/orig-delta200.0-499.bighaloparticles#104",
+        "comp" : "/sz_001_velNoComp-499.bighaloparticles#104"
+    },
+
+
+    "part-file-a" : 
+    {
+        "orig" : "/orig-499.haloparticles#154",
+        "comp" : "/sz_001_velNoComp-499.haloparticles#154"
+    },
+
+    "part-file-b" : 
+    {
+        "orig" : "/orig-499.haloparticletags#154",
+        "comp" : "/sz_001_velNoComp-499.haloparticletags#154"
+    }
+}
